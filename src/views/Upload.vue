@@ -28,10 +28,22 @@ export default {
     goBack() {
       this.$router.go(-1);
     },
+    // 进入窗口时提示
+    messageBox() {
+      this.$alert('注：请根据图片内容，以输入或选择的方式将信息填入下表。一辆车录入一条信息，录入一条则提交一条，直到录入全部车辆、线路信息！请认真录入，感谢合作！', '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+        showClose: false,
+      });
+    },
   },
   mounted () {
-    if (localStorage.getItem('username') == '' && localStorage.getItem('username') == null) {
-      this.$router.push({path: '/'})
+    if (localStorage.getItem('access_token') != '' && localStorage.getItem('access_token') != null) {
+      // 进入窗口时提示
+    this.messageBox()
+    }else {
+      this.$router.push({path: '/'});
+      this.$toast('请登录')
     }
   }
 }

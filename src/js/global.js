@@ -2,7 +2,7 @@
 const login = '/Web/Auth/login'
 // { phone, pwd, captcha, token }
 
-//登出接口
+// 登出接口
 const logout ='/Web/Auth/logout'
 // { user_id }
 
@@ -33,7 +33,7 @@ const getJob = '/Web/Card/getJob'
 // 当前地址
 let baseUrl = ''
 
-if (window.location.host == 'card-trans.a56999.com') {
+if (window.location.host == 'static.a56999.com') {
   baseUrl = 'https://card-trans.a56999.com'
 } else {
   baseUrl = 'http://sit.card-trans.a56999.com'

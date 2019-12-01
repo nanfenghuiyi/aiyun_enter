@@ -89,7 +89,6 @@ export default {
     },
     getAdd() {
       if (localStorage.getItem('username') != '' && localStorage.getItem('username') != null) {
-        console.log(111)
         this.$router.push({ path: "/Upload" });
       } else {
         this.$toast('请登录')

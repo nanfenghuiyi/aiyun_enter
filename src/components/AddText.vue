@@ -1,30 +1,20 @@
 <template>
   <div class="container" :class="showBanner?'container-active':''">
     <div class="header">
-      <div class="header-img" @click="textImgPopup">
-        <img src="../assets/test.jpg" alt="">
-        <div>点击查看详图</div>
+      <div class="header-img" v-viewer>
+        <img :src="path" alt="">
       </div>
-      <!-- 信息查看 -->
-      <div>
-        <van-popup round="" v-model="textImgShow" style="width:80%;heigth:90%">
-          <div class="news-form-header">表格信息</div>
-          <div class="news-form-img" >
-            <img src="../assets/test.jpg" alt="" v-viewer @click="imgShow">
-          </div>
-          <div class="news-form-section">
-            <div>信息补充：</div>
-            <div class="form-section-first">
-              <div>始发站</div>
-              <div class="form-section-address" v-text="startAddress"></div>
-            </div>
-          </div>
-        </van-popup>
+    </div>
+    <div class="news-form-section">
+      <div>信息补充</div>
+      <div class="form-section-first">
+        <div>始发站</div>
+        <div class="form-section-address" v-text="startAddress"></div>
       </div>
     </div>
     <div class="section">
       <div>
-        <p class="section-text">车辆信息</p>
+        <p class="section-text" @click="datu">车辆信息</p>
         <ul>
           <li class="section-car">
             <div>有无车牌</div>
@@ -141,7 +131,7 @@
         <ul>
           <li class="section-car">
             <div>随车电话</div>
-            <input type="text" v-model.trim="phone" maxlength="11" placeholder="输入可联系到的随车号码" />
+            <input class="text-right" type="text" v-model.trim="phone" maxlength="11" placeholder="输入可联系到的随车号码" />
           </li>
         </ul>
       </div>
@@ -294,15 +284,17 @@
 
 <script>
 
-
 export default {
   inject: ["reload"],
   data() {
     return {
+      src:'../assets/test.jpg',
+      access_token: '',
       showBanner: true,
-      phone: "",
+      upload_id: '',
+      phone: '',
       line_type: 0,
-      start_time: "",
+      start_time: '',
       end_time: '',
       period: '',
       plate_for_short: '',
@@ -382,13 +374,17 @@ export default {
       data:'',
       fullscreenLoading: false, // 加载中
       //信息查看
-      textImgShow: false, // 信息显示
       startAddress: '',
       // 温馨提示
       reminderShow: false,
+      // 获取的任务地址
+      path: '',
     };
   },
   methods: {
+    datu(){
+      console.log(this.Viewer)
+    },
     handleCommand(command) {
       this.commandCarPlate = command;
       this.plate_for_short = '';
@@ -437,14 +433,12 @@ export default {
     },
     thisData(value) {
       var nowDate=new Date
-      var year=nowDate.getFullYear()
-      var month=nowDate.getMonth()
-      var day=nowDate.getDay()
+      var nowTime = nowDate.toLocaleDateString();
       if (this.timeNum==1 || this.timeNum==2) {
-        this.start_time = (new Date((year+ '/' + month + '/' + day + ' ' + value + ":00")).getTime())/1000;
+        this.start_time = (new Date((nowTime + ' ' + value + ":00")).getTime())/1000;
         this.goStartTime = value;
       }else if (this.timeNum==3) {
-        this.end_time = (new Date((year+ '/' + month + '/' + day + ' ' + value + ":00")).getTime())/1000;
+        this.end_time = (new Date((nowTime + ' ' + value + ":00")).getTime())/1000;
         this.goEndTime = value;
       } 
       this.timeShow = false;
@@ -468,7 +462,7 @@ export default {
     // 获得省
     getTheProvinces() {
       var url = this.$global_msg.getProvinces;
-      this.axios.post(url, []).then(res => {
+      this.axios.post(url, {}).then(res => {
         var data = res.data;
         // console.log(data)
         this.getProvinces = data.data;
@@ -495,6 +489,7 @@ export default {
       this.pro_code = c;
       var url = this.$global_msg.getCities;
       var obj = { pro_code: c };
+      // console.log(obj)
       this.axios.post(url, obj).then(res => {
         var data = res.data;
         // console.log(data);
@@ -596,7 +591,6 @@ export default {
           if (data.data.length<3) {
             var i = {city:e ,code:data.data[0].code};
             this.getViaCities = this.getViaCities.concat(i);
-            console.log(111)
           }else{
             this.getViaCities = data.data;
           }
@@ -623,7 +617,7 @@ export default {
     getSerachAddress() {
       var that=this
       // 实例化Autocomplete
-      console.log(that.city)
+      // console.log(that.city)
       var autoOptions = {
         //city 限定城市，默认全国
         city: that.city,
@@ -757,66 +751,75 @@ export default {
     },
     // 提交信息
     uplaodClick() {
-      var that = this;
-      // var user_id = JSON.parse(localStorage.getItem("user_id"));
       var uplaodObj = {
-        user_id: JSON.parse(localStorage.getItem("user")).user.user_id,
+        upload_id: this.upload_id,
         line_type: this.line_type,
         start_time: this.start_time,
         city_code: this.city_code,
+        start: this.start,
+        end: this.end,
         start_time: this.start_time,
         end_time: this.end_time,
         period: this.period,
         plate_for_short: this.plate_for_short,
         plate_for_alpha: this.plate_for_alpha,
         plate_no: this.plate_no,
-        start: this.start,
-        end: this.end,
         phone: this.phone,
         intervals: this.intervals,
         spaces: this.spaces,
-        pass_points: this.pass_points
+        pass_points: this.pass_points,
+        access_token: this.access_token,
       };
-      // console.log("uplaodObj", uplaodObj);
-      var url='Web/ThirdReportBusLine/report';
+      // console.log("uplaodObj===", uplaodObj);
+      var url = this.$global_msg.saveLine;
       this.axios.post(url, uplaodObj)
       .then(res=>{
         // console.log(res);
         var data=res.data;
-        if(res.status==200 && data.status==1){
+        if(res.status==200 && data.code==0){
           this.fullscreenLoading = false;
-          this.$toast(data.msg)
-          this.line_type = 0;
-          this.start_time = '';
-          this.city_code = '';
-          this.start_time = '';
-          this.end_time = '';
-          this.period = '';
-          this.plate_for_short = '';
-          this.plate_for_alpha = '';
-          this.plate_no = '';
-          this.start = null;
-          this.end = null;
-          this.phone = ''
-          this.intervals = [];
-          this.spaces = [];
-          this.pass_points = [];
-          this.plateShort = '选择';
-          this.plateletter = '选择';
-          this.goStartTime = '选择时间';
-          this.goEndTime = '选择时间';
-          this.goViaTime = '选择时间';
-          this.checkStart = '选择起点';
-          this.checkEnd = '选择起点';
-          this.checkVia = '选择起点';
-          this.phone = '';
-          this.commandShifts = 0;
-          this.commandCarPlate = 0;
+          this.$toast(data.msg);
+          this.clearUplaod();
+          this.reminderShow = true; // 温馨提示
+        }else if (res.status==200 && data.code==9301) {
+          this.fullscreenLoading = false;
+          this.$toast(data.msg);
+          this.clearUplaod();
+          this.reminderShow = true; // 温馨提示
         }else{
           this.fullscreenLoading = false;
-          this.$toast(data.msg)
+          this.$toast(data.msg);
         }
       })
+    },
+    // 清除当前页面内容
+    clearUplaod() {
+      this.line_type = 0;
+      this.start_time = '';
+      this.city_code = '';
+      this.start_time = '';
+      this.end_time = '';
+      this.period = '';
+      this.plate_for_short = '';
+      this.plate_for_alpha = '';
+      this.plate_no = '';
+      this.start = null;
+      this.end = null;
+      this.phone = ''
+      this.intervals = [];
+      this.spaces = [];
+      this.pass_points = [];
+      this.plateShort = '选择';
+      this.plateletter = '选择';
+      this.goStartTime = '选择时间';
+      this.goEndTime = '选择时间';
+      this.goViaTime = '选择时间';
+      this.checkStart = '选择起点';
+      this.checkEnd = '选择起点';
+      this.checkVia = '选择起点';
+      this.phone = '';
+      this.commandShifts = 0;
+      this.commandCarPlate = 0;
     },
     // 路线规划
     getDriving(points, i) {
@@ -848,38 +851,60 @@ export default {
         this.uplaodClick();
       }
     },
-    // 图片详情查看
-    textImgPopup() {
-      this.textImgShow = true;
+    // 获取任务
+    getJob() {
+      var url = this.$global_msg.getJob;
+      var obj = {access_token: this.access_token};
+      // console.log(obj)
+      this.axios.post(url, obj)
+      .then(res => {
+        var data = res.data;
+        // console.log('getJob===',data)
+        this.path = data.data.path;
+        this.upload_id = data.data.id;
+        var start = data.data.start;
+        this.startAddress = start!=null ? start : '见图';
+      })
     },
-    imgShow(){
-      this.textImgShow = false;
-    },
-    // 进入窗口时提示
-    messageBox() {
-      this.$alert('注：请根据图片对应下方表格中需填入或选择的信息进行信息录入。一辆车对应录入一遍信息，若图片中有多辆车则需分别录入该图片每辆车所对应的信息。录入一条保存一条，直到全部车辆录入完成。请认真录入，感谢合作！', '提示', {
-        confirmButtonText: '确定',
-        type: 'warning',
-      });
+    // 确认已经整理完一张名片
+    confirmComplete(index) {
+      this.clearUplaod();
+      var url = this.$global_msg.confirmComplete;
+      var obj = {upload_id: this.upload_id, access_token: this.access_token};
+      this.axios.post(url, obj)
+      .then(res => {
+        // console.log(res)
+        if (index == 1) {// 当前已录完，录入下一张
+          // console.log('当前已录完，录入下一张===')
+          this.getJob();
+        }else if (index == 2) {// 当前已录完，返回主界面
+          // console.log('当前已录完，返回主界面===')
+          this.$router.push({ path: "/" });
+        }
+      })
     },
     /**
      * 信息确认
      */
     // 继续录入当前图片
     continueEnter() {
-      console.log('继续录入当前图片===')
+      // console.log('继续录入当前图片===');
+      this.clearUplaod(); // 清除当前页面内容
+      this.reminderShow = false; // 温馨提示
     },
     // 当前已录完，录入下一张
     nextEter() {
-      console.log('当前已录完，录入下一张===')
+      this.confirmComplete(1)
+      this.reminderShow = false;
     },
     // 当前未录完，返回主界面
     unrecordedReturn() {
-      console.log('当前未录完，返回主界面===')
+      // console.log('当前未录完，返回主界面===');
+      this.$router.push({ path: "/" });
     },
     // 当前已录完，返回主界面
     recordedReturn() {
-      console.log('当前已录完，返回主界面===')
+      this.confirmComplete(2)
     },
   },
   created() {
@@ -900,6 +925,7 @@ export default {
     } 
   },
   mounted() {
+    // 地图初始化
     AMap.plugin("AMap.Driving", function() {})
     AMap.plugin("AMap.Autocomplete", function() {})
     for (var i = 0; i <= 300; i++) {
@@ -907,8 +933,12 @@ export default {
         this.goViaTimeColumns.push(i);
       }
     };
-    // 进入窗口时提示
-    this.messageBox()
+    // 获取access_token
+    if (localStorage.getItem('access_token') != '' && localStorage.getItem('access_token') != null) {
+      this.access_token = localStorage.getItem('access_token');
+    }
+    // 获取任务
+    this.getJob();
   }
 };
 </script>
@@ -938,15 +968,17 @@ input {
   top: 44px;
   left: 0;
   width: 100%;
+  height: 200px;
   background: #f2f2f4;
   z-index: 99;
 }
 .header-img{
   width: 100px;
   height: 120px;
-  margin: 20px auto;
+  margin: 0 auto;
 }
 .header-img img{
+  display: none;
   width: 100px;
   height: 100px;
 }
@@ -964,7 +996,7 @@ input {
   text-align: left;
   font-size: 16px;
   overflow: auto;
-  margin-top: 150px;
+  margin-top: 260px;
 }
 .section-text {
   padding: 10px 20px;
@@ -979,6 +1011,9 @@ input {
 .section-car {
   display: flex;
   justify-content: space-between;
+}
+.text-right{
+  text-align: right;
 }
 .section-btn{
   background:rgba(241,242,243,1);
@@ -1033,23 +1068,19 @@ input {
   border: 1px solid #000
 }
 /* 信息查看 */
-.news-form-header{
-  font-size:16px;
-  padding: 14px 0 6px;
-}
-.news-form-img{
-  width: 233px;
-  height: 310px;
-  margin: 0 auto;
-}
-.news-form-img img{
-  width: 233px;
-  height: 310px;
-}
 .news-form-section{
+  position: fixed;
+  top: 240px;
+  left: 0;
+  width: 100%;
   font-size: 14px;
   text-align: left;
-  margin: 16px 10px 10px;
+  background: #f2f2f4;
+  z-index: 20;
+  padding: 10px 0px;
+}
+.news-form-section>div{
+  margin-left: 20px;
 }
 .form-section-first{
   display: flex;
@@ -1057,8 +1088,9 @@ input {
   margin-top: 10px;
 }
 .form-section-address{
-  width: 200px;
+  width: 280px;
   text-align: right;
+  margin-right: 20px;
   /* text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap; */
@@ -1108,5 +1140,23 @@ html,body {
 .el-message-box{
   width: 100% !important;
   margin-top: 50% !important;
+}
+/* 图片预览 */
+.el-image-viewer__wrapper{
+  height: 34% !important;
+}
+.el-image-viewer__close{
+  top: 0 !important;
+  right: 0% !important;
+}
+.el-image-viewer__actions{
+  bottom: 7px !important;
+  height: 20px !important;
+  background-color: #0000 !important;
+}
+
+.vcontainer {
+    height: 100px;
+    margin-bottom: 10px;
 }
 </style>

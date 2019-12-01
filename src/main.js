@@ -26,19 +26,23 @@ Vue.use(VueLazyload, {
   loading: "/loading.png"
 })
 
-Vue.use(Viewer, {
-  defaultOptions: {
-    zoomIn: 1,
-    zoomOut: 1,
-    reset: 1,
-    prev: 0,
-    play: 0,
-    next: 0,
-    rotateLeft: 1,
-    rotateRight: 1,
-    // fullscreen: false
-  }
-})
+Viewer.setDefaults({
+  'inline': true,
+  'button': true, //右上角按钮
+  "navbar": false, //底部缩略图
+  "title": true, //当前图片标题
+  "toolbar": true, //底部工具栏
+  "tooltip": true, //显示缩放百分比
+  "movable": true, //是否可以移动
+  "zoomable": true, //是否可以缩放
+  "rotatable": true, //是否可旋转
+  "scalable": false, //是否可翻转
+  "transition": true, //使用 CSS3 过度
+  "fullscreen": true, //播放时是否全屏
+  "keyboard": true, //是否支持键盘
+  "url": "data-source",
+});
+
 
 Vue.config.productionTip = false
 Vue.prototype.$global_msg = global_msg

@@ -33,7 +33,7 @@
         </li>
       </ul>
       <div class="noneNews" v-if="loading">加载中</div>
-      <div class="noneNews" v-if="noMore">暂无更多路线资料</div>
+      <div class="noneNews" v-if="noMore">暂无更多录入信息</div>
     </div>
     <!-- 日期选择 -->
     <div>
@@ -72,19 +72,17 @@
     </div>
     <!-- 路线详情 -->
     <div>
-      <van-popup v-model="lineShow" style="width:80%">
+      <van-popup v-model="lineShow" style="width:80%;height:70%">
         <div class="bus-section">
           <div class="bus-details">录入详情</div>
           <div class="bus-details-img">
-            <img src="../assets/test.jpg" alt="" v-viewer>
-          </div>
-          <!-- <div class="demo-image__preview">
-            <el-image 
+            <img :src="path" alt="" @click="imgShow">
+            <!-- <el-image  v-viewer
               style="width: 100px; height: 100px"
-              :src="url[0]" 
-              :preview-src-list="url">
-            </el-image>
-          </div> -->
+              :src="path" 
+              :preview-src-list="[path]">
+            </el-image> -->
+          </div>
           <div>
             <ul>
               <li class="bus-details-style">
@@ -132,6 +130,14 @@
         </div>
       </van-popup>
     </div>
+    <!-- 大图 -->
+    <div>
+      <van-image-preview
+        v-model="bigShow"
+        :images="[path]"
+      >
+      </van-image-preview>
+    </div>
   </div>
 </template>
 
@@ -144,6 +150,7 @@ export default {
   inject: ["reload"],
   data() {
     return {
+      path: '',
       full_plate: '',
       is_flow: '',
       start_time: '',
@@ -158,7 +165,7 @@ export default {
       busEndLine: '',
       busPhone: '',
       loginStatus: true,
-      show: false,
+      bigShow: false,
       dataShow: false, // 时间选择页面
       dataActive: true,
       lineShow: false, // 路线详情
@@ -207,10 +214,8 @@ export default {
     },
     dataPopup() {
       if (localStorage.getItem('access_token') != null && localStorage.getItem("access_token") != '') {
-        this.dataActive = false;
+        // this.dataActive = false;
         this.dataShow = true;
-        this.addList = [];
-        this.newList = [];
       } else {
         this.$toast('请登陆');
         this.$emit('cardChildFn', this.loginShow);
@@ -267,16 +272,20 @@ export default {
     },
     // 时间确定
     thisData() {
-      console.log('时间确定===')
+      // console.log('时间确定===')
+      this.addList = [];
+      this.newList = [];
       this.page = 1;
       this.newCheck = true;
       this.records(2);
       this.checkDate = this.start + "至" + this.end;
       this.dataShow = false;
+      this.dataActive = false;
     },
     // 取消时间选择
     endData() {
       this.dataShow = false;
+      // this.dataActive = true;
     },
     startChange() {
       this.start = this.year + "-" + this.month + "-" + this.day;
@@ -313,10 +322,10 @@ export default {
       }else {
         obj = obj2
       }
-      console.log(obj)
+      // console.log(obj)
       this.axios.post(url, obj).then(res => {
         var data = res.data;
-        console.log(data)
+        // console.log(data)
         if (data.data.total == null) {
           this.addListNum = 0;
         } else {
@@ -336,7 +345,7 @@ export default {
     },
     // 详情记录
     lineDetail(e) {
-      console.log(e)
+      this.path = '';
       this.full_plate = '';
       this.is_flow = '';
       this.start_time = '';
@@ -350,12 +359,13 @@ export default {
       var url = this.$global_msg.detail;
       var access_token = this.access_token;
       var obj = {access_token:access_token, id:e}
-      console.log('lineDetail===',obj)
+      // console.log('lineDetail===',obj)
       this.axios.post(url,obj)
       .then(res=>{
-        console.log(res)
+        // console.log(res)
         var data = res.data.data;
         // console.log(data);
+        this.path = data.path;
         this.full_plate = data.full_plate!=''?data.full_plate:'无';
         this.is_time = data.is_flow==2 ? true : false;
         this.is_flow = data.is_flow==2 ? '流水班次' : '固定班次';
@@ -375,6 +385,11 @@ export default {
         this.dest_name = data.dest_name != null ? data.dest_name : '无';
         this.phone = data.phone != null ? data.phone : '无';
       })
+    },
+    // 图片放大显示
+    imgShow() {
+      // this.lineShow = false;
+      this.bigShow = true;
     },
   },
   computed: {
