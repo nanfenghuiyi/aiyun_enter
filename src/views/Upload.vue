@@ -40,7 +40,7 @@ export default {
   mounted () {
     if (localStorage.getItem('access_token') != '' && localStorage.getItem('access_token') != null) {
       // 进入窗口时提示
-    this.messageBox()
+      this.messageBox()
     }else {
       this.$router.push({path: '/'});
       this.$toast('请登录')

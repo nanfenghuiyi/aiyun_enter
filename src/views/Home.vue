@@ -24,7 +24,7 @@
     </div>
     <!-- 登录窗口 -->
     <div>
-      <van-popup round v-model="loginShow">
+      <van-popup round v-model="loginShow" :closeOnClickOverlay='closeClick'>
         <login @errorChildFn="errorParentFn"></login>
       </van-popup>
     </div>
@@ -58,6 +58,7 @@ export default {
       errorShow: false,
       numCard: 0,
       numLine: 0,
+      closeClick: false, // 点击遮罩层不返回
     }
   },
   components: {textdetails,login,logout,error},
@@ -103,6 +104,8 @@ export default {
   mounted () {
     if (localStorage.getItem('username') != '' && localStorage.getItem('username') != null) {
       this.title = localStorage.getItem('username');
+    }else {
+      
     }
   }
 }

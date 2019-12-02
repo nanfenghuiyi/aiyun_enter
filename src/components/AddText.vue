@@ -77,7 +77,6 @@
               <li class="section-car" @click="checkTime(2)">
                 <div>开始时间</div>
                 <div>
-                  <!-- <input type="text" placeholder="选择时间" value="" style="width:80%;border:1px solid"> -->
                   <span class="span-style" v-text="goStartTime"></span>
                   <i class="el-icon-arrow-down"></i>
                 </div>
@@ -254,7 +253,7 @@
             <div class="myPageTop">
               <div>
                 请输入详细地址
-                <input class="mapInput" v-model.trim="value" @input="changeInput()"/>
+                <input class="mapInput" v-model.trim="searchValue" @input="changeInput()"/>
               </div>
               <div class="section-list" id="list">
                 <ul>
@@ -270,7 +269,7 @@
     </div>
     <!-- 信息确认 -->
     <div class="reminder-size">
-      <van-popup round="" v-model="reminderShow" style="width:90%;heigth:90%">
+      <van-popup round v-model="reminderShow" style="width:90%;heigth:90%" :closeOnClickOverlay='closeClick'>
         <div class="reminder">温馨提示</div>
         <div class="reminder-title">信息录入成功，等待后台审核…</div>
         <div class="reminder-btn" @click="continueEnter">继续录入当前图片</div>
@@ -288,7 +287,7 @@ export default {
   inject: ["reload"],
   data() {
     return {
-      src:'../assets/test.jpg',
+      closeClick: false, // 点击遮罩层不返回
       access_token: '',
       showBanner: true,
       upload_id: '',
@@ -368,7 +367,7 @@ export default {
       pointList : [],
       // 地图
       mapShow: false,
-      value: '',
+      searchValue: '',
       tips: [],
       query: '',
       data:'',
@@ -431,15 +430,15 @@ export default {
       this.timeShow = true;
       this.timeNum = e;
     },
-    thisData(value) {
+    thisData(time) {
       var nowDate=new Date
       var nowTime = nowDate.toLocaleDateString();
       if (this.timeNum==1 || this.timeNum==2) {
-        this.start_time = (new Date((nowTime + ' ' + value + ":00")).getTime())/1000;
-        this.goStartTime = value;
+        this.start_time = (new Date((nowTime + ' ' + time + ":00")).getTime())/1000;
+        this.goStartTime = time;
       }else if (this.timeNum==3) {
-        this.end_time = (new Date((nowTime + ' ' + value + ":00")).getTime())/1000;
-        this.goEndTime = value;
+        this.end_time = (new Date((nowTime + ' ' + time + ":00")).getTime())/1000;
+        this.goEndTime = time;
       } 
       this.timeShow = false;
     },
@@ -510,6 +509,8 @@ export default {
       });
     },
     startCities(e, c) {
+      this.searchValue = '';
+      this.tips = [];
       this.showBanner = false;
       this.startCity = e;
       this.startCode = c;
@@ -554,6 +555,8 @@ export default {
       });
     },
     endCities(e, c) {
+      this.searchValue = '';
+      this.tips = [];
       this.endCity = e;
       this.endCode = c;
       this.getEndCitiesShow = false;
@@ -598,6 +601,8 @@ export default {
       });
     },
     viaCities(e, c) {
+      this.searchValue = '';
+      this.tips = [];
       this.viaCity = e;
       this.viaCode = c;
       this.getViaCitiesShow = false;
@@ -623,18 +628,22 @@ export default {
         city: that.city,
         output: "list"
       };
-      var autoComplete = new AMap.Autocomplete(autoOptions);
-      autoComplete.search(that.value, function(status, res) {
-        // 搜索成功时，result即是对应的匹配数据
-        // console.log("getSerachAddress===", res);
-        that.tips = res.tips;
-        for (var i in that.tips) {
-          // console.log(typeof(that.tips[i]['address']))
-          if (that.tips[i]['address'] == null || that.tips[i]['address'].length == 0 || typeof(that.tips[i]['address']) === undefined || that.tips[i]['district'] == '') {
-            that.tips.splice(i, 1);
+      if (that.searchValue != '') {
+        var autoComplete = new AMap.Autocomplete(autoOptions);
+        autoComplete.search(that.searchValue, function(status, res) {
+          // 搜索成功时，result即是对应的匹配数据
+          // console.log("getSerachAddress===", res);
+          var data = res.tips;
+          // console.log(that.tips)
+          for (var i in data) {
+            if (data[i]['address'] == null || data[i]['address'].length == 0 || typeof(data[i]['address']) === undefined || data[i]['district'] == "") {
+              data.splice(i,1);
+              // var t = console.log('district1===' ,data.splice(i,1));
+            }
           }
-        }
-      });
+          that.tips = data;
+        });
+      }
     },
     // 地址选择
     checkDetails(item) {
@@ -658,7 +667,7 @@ export default {
       this.getViaCitiesShow = false;
       this.ViaProvincesShow = false;
       this.mapShow = false;
-      this.value = '';
+      this.searchValue = '';
       this.tips = [];
       var str = (data.city == [] ? data.province : data.city)+"-"+data.name;
       // console.log(str)

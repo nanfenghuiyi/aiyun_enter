@@ -1,12 +1,8 @@
 <template>
   <div class="container">
-    <!-- <div class="header">
-      <i @click="goBack"></i>
-      <div>名片上传</div>
-    </div> -->
     <div class="section-header">登录账号</div>
     <div class="section-style">
-      <div class="code">用户</div>
+      <div class="code">账号</div>
       <input type="text" placeholder="请输入用户名" v-model.trim="username">
     </div>
     <div class="section-style">
@@ -126,29 +122,6 @@ input{
   border-radius: 6px;
   margin: 0 auto;
   padding: 0 25px
-}
-.header {
-  position: relative;
-  width: 375px;
-  height: 44px;
-  line-height: 44px;
-  background: rgba(255, 255, 255, 1);
-  font-size: 16px;
-  color: rgba(51, 51, 51, 1);
-  display: flex;
-  margin: 0 auto;
-}
-.header i {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 40px;
-  height: 40px;
-  background: url("../assets/add/left.png") center no-repeat;
-}
-.header div {
-  flex: 1;
-  text-align: center;
 }
 .section-header{
   padding: 30px 0;
