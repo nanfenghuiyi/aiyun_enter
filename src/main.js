@@ -43,7 +43,6 @@ Viewer.setDefaults({
   "url": "data-source",
 });
 
-
 Vue.config.productionTip = false
 Vue.prototype.$global_msg = global_msg
 
