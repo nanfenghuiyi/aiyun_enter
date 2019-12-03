@@ -326,20 +326,26 @@ export default {
       this.axios.post(url, obj).then(res => {
         var data = res.data;
         // console.log(data)
-        if (data.data.total == null) {
-          this.addListNum = 0;
-        } else {
-          var list = data.data.records;
-          this.listNum = list.length;
-          this.count += this.listNum;
-          if (index==1) {
-            this.addList = this.addList.concat(list);
-          }else {
-            this.newList = this.newList.concat(list);
-            this.addList = this.newList;
+        if (data.code == 4001) {
+          this.$store.commit('_removeToken', 'access_token');
+          this.$store.commit('_removeUsername', 'username');
+          this.$toast('请重新登录')
+        }else {
+          if (data.data.total == null) {
+            this.addListNum = 0;
+          } else {
+            var list = data.data.records;
+            this.listNum = list.length;
+            this.count += this.listNum;
+            if (index==1) {
+              this.addList = this.addList.concat(list);
+            }else {
+              this.newList = this.newList.concat(list);
+              this.addList = this.newList;
+            }
+            this.addListNum = data.data.total;
+            this.loading = false;
           }
-          this.addListNum = data.data.total;
-          this.loading = false;
         }
       });
     },

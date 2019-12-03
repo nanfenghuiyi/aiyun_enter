@@ -869,10 +869,19 @@ export default {
       .then(res => {
         var data = res.data;
         // console.log('getJob===',data)
-        this.path = data.data.path;
-        this.upload_id = data.data.id;
-        var start = data.data.start;
-        this.startAddress = start!=null ? start : '见图';
+        if (data.code == 4001) {
+          this.$store.commit('_removeToken', 'access_token');
+          this.$store.commit('_removeUsername', 'username');
+          this.$router.replace({
+              path: '/',
+          });
+        }else {
+          this.path = data.data.path;
+          this.upload_id = data.data.id;
+          var start = data.data.start;
+          this.startAddress = start!=null ? start : '见图';
+        }
+        
       })
     },
     // 确认已经整理完一张名片

@@ -1,5 +1,7 @@
 import Vue from "vue";
 import axios from "axios";
+import store from "./store/index";
+import router from './router'
 import global from "./js/global";
 // import qs from "qs";
 
@@ -19,6 +21,10 @@ axios.interceptors.request.use(function (config) {
     config.headers.Authorization = window.localStorage.getItem('access_token');
   }
   // console.log(localStorage.getItem('access_token'));
+  // store.commit('_setTokenStorage', 'cdbd49b1-830b-47eb-804a-d4ca80ed1429')
+  // console.log(localStorage.getItem('access_token'));
+  // cdbd49b1-830b-47eb-804a-d4ca80ed1429
+  console.log(config)
   return config
 }, function (error) {
   // 对请求错误做些什么
@@ -28,19 +34,36 @@ axios.interceptors.request.use(function (config) {
 // 添加响应拦截器
 axios.interceptors.response.use(function (response) {
   // 对响应数据做点什么
+  // console.log(response)
+  if (response.data.code == 4001) {
+    // console.log(4001)
+    store.commit('_removeToken', 'access_token');
+    store.commit('_removeUsername', 'username');
+    router.replace({
+      path: '/',
+    });
+  }
   return response
 }, function (error) {
     console.log('响应拦截器error===', error)
     try {
       if (error.response) {
         switch (error.response.status) {
-          case 401://token过期，清除它,清除token信息并跳转到登录页面
-            this.$store.commit('_removeToken', 'access_token');
-            this.$store.commit('_removeUsername', 'username');
+          case 401: // token过期，清除它,清除token信息并跳转到登录页面
+            store.commit('_removeToken', 'access_token');
+            store.commit('_removeUsername', 'username');
             router.replace({
               path: '/',
             });
-            return;
+          break;
+          // 4001请登录
+          case 4001:
+            store.commit('_removeToken', 'access_token');
+            store.commit('_removeUsername', 'username');
+            router.replace({
+              path: '/',
+            });
+          break;
         }
       }
       return Promise.reject(error.response.data)

@@ -60,10 +60,10 @@ export default {
       // 发送请求
       var url=this.$global_msg.login;
       var obj={username,password,captcha,token};
-      console.log(obj)
+      // console.log(obj)
       this.axios.post(url,obj)
       .then(res=>{
-        console.log(res)
+        // console.log(res)
         var data=res.data;
         this.status=data.status;
         // console.log(data)

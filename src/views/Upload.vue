@@ -45,6 +45,7 @@ export default {
       this.$router.push({path: '/'});
       this.$toast('请登录')
     }
+    
   }
 }
 </script>

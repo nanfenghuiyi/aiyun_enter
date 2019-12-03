@@ -105,7 +105,8 @@ export default {
     if (localStorage.getItem('username') != '' && localStorage.getItem('username') != null) {
       this.title = localStorage.getItem('username');
     }else {
-      
+      // this.loginShow = true;
+      this.title = '登录账号'
     }
   }
 }
