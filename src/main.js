@@ -29,7 +29,7 @@ Vue.use(VueLazyload, {
 Viewer.setDefaults({
   'inline': true,
   'button': true, //右上角按钮
-  "navbar": false, //底部缩略图
+  "navbar": true, //底部缩略图
   "title": true, //当前图片标题
   "toolbar": true, //底部工具栏
   "tooltip": true, //显示缩放百分比

@@ -76,7 +76,7 @@
         <div class="bus-section">
           <div class="bus-details">录入详情</div>
           <div class="bus-details-img">
-            <img :src="path" alt="" @click="imgShow">
+            <img :src="path[0]" alt="" @click="imgShow">
             <!-- <el-image  v-viewer
               style="width: 100px; height: 100px"
               :src="path" 
@@ -134,7 +134,8 @@
     <div>
       <van-image-preview
         v-model="bigShow"
-        :images="[path]"
+        :images="path"
+        @change="onChange"
       >
       </van-image-preview>
     </div>
@@ -150,7 +151,7 @@ export default {
   inject: ["reload"],
   data() {
     return {
-      path: '',
+      path: [],
       full_plate: '',
       is_flow: '',
       start_time: '',
@@ -351,7 +352,7 @@ export default {
     },
     // 详情记录
     lineDetail(e) {
-      this.path = '';
+      this.path = [];
       this.full_plate = '';
       this.is_flow = '';
       this.start_time = '';
@@ -371,7 +372,12 @@ export default {
         // console.log(res)
         var data = res.data.data;
         // console.log(data);
-        this.path = data.path;
+        var pathList = data.path;
+        for (let i = 0; i < pathList.length; i++) {
+          console.log(pathList[i])
+          this.path.push(pathList[i])
+        }
+        console.log(this.path)
         this.full_plate = data.full_plate!=''?data.full_plate:'无';
         this.is_time = data.is_flow==2 ? true : false;
         this.is_flow = data.is_flow==2 ? '流水班次' : '固定班次';
@@ -396,6 +402,9 @@ export default {
     imgShow() {
       // this.lineShow = false;
       this.bigShow = true;
+    },
+    onChange(index) {
+      this.index = index;
     },
   },
   computed: {
@@ -569,8 +578,6 @@ export default {
 }
 /* 图片查看器 */
 .viewer-toolbar .viewer-one-to-one,
-.viewer-prev,
-.viewer-next,
 .viewer-play,
 .viewer-flip-horizontal,
 .viewer-flip-vertical {

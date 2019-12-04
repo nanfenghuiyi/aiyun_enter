@@ -48,7 +48,7 @@ axios.interceptors.response.use(function (response) {
     console.log('响应拦截器error===', error)
     try {
       if (error.response) {
-        switch (error.response.status) {
+        switch (error.response.data.code) {
           case 401: // token过期，清除它,清除token信息并跳转到登录页面
             store.commit('_removeToken', 'access_token');
             store.commit('_removeUsername', 'username');

@@ -2,7 +2,7 @@
   <div class="container" :class="showBanner?'container-active':''">
     <div class="header">
       <div class="header-img" v-viewer>
-        <img :src="path" alt="">
+        <img v-for="(item, index) in path" :key="index" :src="item" alt="">
       </div>
     </div>
     <div class="news-form-section">
@@ -477,8 +477,9 @@ export default {
     // 获得城市
     // 设置起点
     setStart() {
-      this.startProvincesShow = true;
-      this.getTheProvinces();
+      /* this.startProvincesShow = true;
+      this.getTheProvinces(); */
+      this.mapShow = true;
       this.type = 0;
     },
     startProvinces(e,c) {
@@ -524,8 +525,9 @@ export default {
     },
     // 设置终点
     setEnd() {
-      this.endProvincesShow = true;
-      this.getTheProvinces();
+      /* this.endProvincesShow = true;
+      this.getTheProvinces(); */
+      this.mapShow = true;
       this.type = 1
     },
     endProvinces(e,c) {
@@ -569,8 +571,9 @@ export default {
     },
     // 设置途经点
     setVia() {
-      this.viaProvincesShow = true;
-      this.getTheProvinces();
+      /* this.viaProvincesShow = true;
+      this.getTheProvinces(); */
+      this.mapShow = true;
       this.type = 2
     },
     viaProvinces(e,c) {
@@ -620,19 +623,22 @@ export default {
     },
     // 地址获取
     getSerachAddress() {
+      // console.log('getSerachAddress===',1111)
       var that=this
       // 实例化Autocomplete
       // console.log(that.city)
       var autoOptions = {
         //city 限定城市，默认全国
-        city: that.city,
+        // city: that.city,
+        city: '全国',
         output: "list"
       };
       if (that.searchValue != '') {
+        // console.log('getSerachAddress===',2222)
         var autoComplete = new AMap.Autocomplete(autoOptions);
         autoComplete.search(that.searchValue, function(status, res) {
           // 搜索成功时，result即是对应的匹配数据
-          // console.log("getSerachAddress===", res);
+          console.log("getSerachAddress===", res);
           var data = res.tips;
           // console.log(that.tips)
           for (var i in data) {
@@ -649,41 +655,54 @@ export default {
     checkDetails(item) {
       this.showBanner = false;
       var data = {};
-      data.province = this.province;
-      data.pro_code = this.pro_code;
-      data.city = this.city;
-      data.city_code = this.city_code;
-      data.dist = item.district;
-      data.ad_code = item.adcode;
-      data.name = item.name;
-      data.address = item.address.length != 0 ? item.address : item.province;
-      data.latitude = item.location.lat;
-      data.longitude = item.location.lng;
-      // console.log('checkDetails=====',data);
-      this.getCitiesShow = false;
-      this.startProvincesShow = false;
-      this.getendCitiesShow = false;
-      this.endProvincesShow = false;
-      this.getViaCitiesShow = false;
-      this.ViaProvincesShow = false;
-      this.mapShow = false;
-      this.searchValue = '';
-      this.tips = [];
-      var str = (data.city == [] ? data.province : data.city)+"-"+data.name;
-      // console.log(str)
-      if(this.type == 0) {
-        this.checkStart = str;
-        this.start = data
-        // console.log(data);
-      }else if (this.type == 1) {
-        this.checkEnd = str;
-        // console.log('checkEnd====',this.checkEnd)
-        this.end = data
-      }else if (this.type == 2) {
-        this.checkVia = str;
-        this.pass_points = [data]
-        // console.log('pass_points=====',this.pass_points);
-      }
+      var url = this.$global_msg.getCodeByFullNameForAmap;
+      var obj = {fullname: item.district}
+      this.axios.post(url,obj)
+      .then(res => {
+        console.log(res)
+        if (res.data.code == 0 && res.data.data != null) {
+          var results = res.data.data
+          // console.log(results)
+          data.province = results.province_name;
+          data.pro_code = results.provincecode;
+          data.city = results.city;
+          data.city_code = results.citycode;
+          data.dist = results.name;
+          data.ad_code = item.adcode;
+          data.name = item.name;
+          data.address = item.address.length != 0 ? item.address : item.province;
+          data.latitude = item.location.lat;
+          data.longitude = item.location.lng;
+
+          // console.log('checkDetails=====',data);
+          this.getCitiesShow = false;
+          this.startProvincesShow = false;
+          this.getendCitiesShow = false;
+          this.endProvincesShow = false;
+          this.getViaCitiesShow = false;
+          this.ViaProvincesShow = false;
+          this.mapShow = false;
+          this.searchValue = '';
+          this.tips = [];
+          var str = (data.city == [] ? data.province : data.city)+"-"+data.name;
+          // console.log(str)
+          if(this.type == 0) {
+            this.checkStart = str;
+            this.start = data
+            // console.log(data);
+          }else if (this.type == 1) {
+            this.checkEnd = str;
+            // console.log('checkEnd====',this.checkEnd)
+            this.end = data
+          }else if (this.type == 2) {
+            this.checkVia = str;
+            this.pass_points = [data]
+            // console.log('pass_points=====',this.pass_points);
+          }
+        }else{
+          this.$toast('地址不合法');
+        }
+      })
     },
 
     //点击提交按钮，检测参数完整性
@@ -824,8 +843,8 @@ export default {
       this.goEndTime = '选择时间';
       this.goViaTime = '选择时间';
       this.checkStart = '选择起点';
-      this.checkEnd = '选择起点';
-      this.checkVia = '选择起点';
+      this.checkEnd = '选择终点';
+      this.checkVia = '选择途径点';
       this.phone = '';
       this.commandShifts = 0;
       this.commandCarPlate = 0;
@@ -836,26 +855,31 @@ export default {
       // console.log(points.length);
       var that=this
       if (i != points.length - 1) {
-        // console.log("111111", points,points.length);
-        var driving = new AMap.Driving({
-          // 驾车路线规划策略，AMap.DrivingPolicy.LEAST_TIME是最快捷模式
-          policy: AMap.DrivingPolicy.LEAST_TIME
-        });
-        var startLngLat = [points[i].longitude, points[i].latitude];
-        var endLngLat = [points[i+1].longitude, points[i+1].latitude];
-        driving.search(startLngLat, endLngLat, function(status, result) {
-          // 未出错时，result即是对应的路线规划方案
-          // console.log(result);
-            if(result && result.routes && result.routes.length>0){
-            that.intervals.push(result.routes[0].distance)
-            that.spaces.push(result.routes[0].time)
-            that.getDriving(points, i+1);
-              // console.log(that.intervals)
-                // console.log(that.spaces)
-            }else{
-              this.$toast('路线规划失败，请稍后再试')
-            }
-        });
+        if (AMap != null && AMap != undefined) {
+          // console.log("111111", points,points.length);
+          var driving = new AMap.Driving({
+            // 驾车路线规划策略，AMap.DrivingPolicy.LEAST_TIME是最快捷模式
+            policy: AMap.DrivingPolicy.LEAST_TIME
+          });
+          var startLngLat = [points[i].longitude, points[i].latitude];
+          var endLngLat = [points[i+1].longitude, points[i+1].latitude];
+          driving.search(startLngLat, endLngLat, function(status, result) {
+            // 未出错时，result即是对应的路线规划方案
+            // console.log(result);
+              if(result && result.routes && result.routes.length>0){
+              that.intervals.push(result.routes[0].distance)
+              that.spaces.push(result.routes[0].time)
+              that.getDriving(points, i+1);
+                // console.log(that.intervals)
+                  // console.log(that.spaces)
+              }else{
+                this.$toast('路线规划失败，请稍后再试')
+              }
+          });
+        }else{
+          this.fullscreenLoading = false;
+          this.$toast('地图组件初始化失败，请刷新重试')
+        }
       } else {
         this.uplaodClick();
       }
@@ -868,7 +892,7 @@ export default {
       this.axios.post(url, obj)
       .then(res => {
         var data = res.data;
-        // console.log('getJob===',data)
+        console.log('getJob===',data)
         if (data.code == 4001) {
           this.$store.commit('_removeToken', 'access_token');
           this.$store.commit('_removeUsername', 'username');
