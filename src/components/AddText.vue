@@ -8,13 +8,13 @@
     <div class="news-form-section">
       <div>信息补充</div>
       <div class="form-section-first">
-        <div>始发站</div>
+        <div v-text="textAddress[addressIndex]"></div>
         <div class="form-section-address" v-text="startAddress"></div>
       </div>
     </div>
     <div class="section">
       <div>
-        <p class="section-text" @click="datu">车辆信息</p>
+        <p class="section-text">车辆信息</p>
         <ul>
           <li class="section-car">
             <div>有无车牌</div>
@@ -182,7 +182,7 @@
       </van-popup>
     </div>
     <!-- 选择起点 -->
-    <div style="height:100%">
+    <!-- <div style="height:100%">
       <van-popup
         v-model="startProvincesShow"
         position="right"
@@ -197,9 +197,9 @@
           <li data-index="index" @click="startCities(item.city,item.code)">{{item.city}}</li>
         </ul>
       </van-popup>
-    </div>
+    </div> -->
     <!-- 选择终点 -->
-    <div style="overflow-y:scroll;padding-bootom:20px">
+    <!-- <div style="overflow-y:scroll;padding-bootom:20px">
       <van-popup
         v-model="endProvincesShow"
         position="right"
@@ -218,9 +218,9 @@
           <li data-index="index" @click="endCities(item.city,item.code)">{{item.city}}</li>
         </ul>
       </van-popup>
-    </div>
+    </div> -->
     <!-- 选择途经点 -->
-    <div>
+    <!-- <div>
       <div>
         <van-popup
           v-model="viaProvincesShow"
@@ -241,7 +241,7 @@
           </ul>
         </van-popup>
       </div>
-    </div>
+    </div> -->
     <!-- 起点地图选择 -->
     <div>
       <van-popup
@@ -255,11 +255,12 @@
                 请输入详细地址
                 <input class="mapInput" v-model.trim="searchValue" @input="changeInput()"/>
               </div>
-              <div class="section-list" id="list">
-                <ul>
-                  <li v-for="(item, index) of tips" :key="index" @click="checkDetails(item)">
+              <div id="list" class="mapList"></div>
+              <div class="section-list">
+                <ul v-infinite-scroll="onload" infinite-scroll-disabled="disabled" infinite-scroll-immediate="false" infinite-scroll-delay="10">
+                  <li v-for="item in tips" @click="checkDetails(item)">
                     <div>{{item.name}}</div>
-                    <div>{{item.district}}{{item.address == null ? item.address : ""}}</div>
+                    <div class="address-size">{{item.pname}}{{item.cityname}}{{item.adname}}</div>
                   </li>
                 </ul>
               </div>
@@ -282,6 +283,7 @@
 </template>
 
 <script>
+import Vue from "vue";
 
 export default {
   inject: ["reload"],
@@ -369,10 +371,14 @@ export default {
       mapShow: false,
       searchValue: '',
       tips: [],
+      pageIndex: 1, // 搜索的页码
+      disabled: false, // 阻止滚动
       query: '',
       data:'',
       fullscreenLoading: false, // 加载中
       //信息查看
+      addressIndex: 0,
+      textAddress: ['始发站', '终点站', '无'],
       startAddress: '',
       // 温馨提示
       reminderShow: false,
@@ -381,9 +387,6 @@ export default {
     };
   },
   methods: {
-    datu(){
-      console.log(this.Viewer)
-    },
     handleCommand(command) {
       this.commandCarPlate = command;
       this.plate_for_short = '';
@@ -459,7 +462,7 @@ export default {
       this.viaTimeShow = false
     },
     // 获得省
-    getTheProvinces() {
+    /* getTheProvinces() {
       var url = this.$global_msg.getProvinces;
       this.axios.post(url, {}).then(res => {
         var data = res.data;
@@ -473,16 +476,17 @@ export default {
         this.getEndProvinces = data.data;
         this.getViaProvinces = data.data;
       });
-    },
+    }, */
     // 获得城市
     // 设置起点
     setStart() {
       /* this.startProvincesShow = true;
       this.getTheProvinces(); */
       this.mapShow = true;
+      this.pageIndex = 1;
       this.type = 0;
     },
-    startProvinces(e,c) {
+    /* startProvinces(e,c) {
       this.getCities = [];
       this.getCitiesShow = true;
       this.startProvince =  e;
@@ -522,15 +526,16 @@ export default {
       this.city = this.startCity;
       this.city_code = this.startCode;
       this.mapShow = true;
-    },
+    }, */
     // 设置终点
     setEnd() {
       /* this.endProvincesShow = true;
       this.getTheProvinces(); */
       this.mapShow = true;
+      this.pageIndex = 1;
       this.type = 1
     },
-    endProvinces(e,c) {
+    /* endProvinces(e,c) {
       this.getEndCities = []
       this.getEndCitiesShow = true;
       this.endProvince = e;
@@ -568,15 +573,16 @@ export default {
       this.city = this.endCity,
       this.city_code = this.endCode,
       this.mapShow = true;
-    },
+    }, */
     // 设置途经点
     setVia() {
       /* this.viaProvincesShow = true;
       this.getTheProvinces(); */
       this.mapShow = true;
+      this.pageIndex = 1;
       this.type = 2
     },
-    viaProvinces(e,c) {
+    /* viaProvinces(e,c) {
       this.getViaCities = []
       this.getViaCitiesShow = true;
       this.viaProvincesShow = false;
@@ -615,59 +621,61 @@ export default {
       this.city = this.viaCity;
       this.city_code = this.viaCode;
       this.mapShow = true;
-    },
+    }, */
     // 地图选择
     changeInput(){
       // console.log(this.value);
-      this.getSerachAddress()
+      this.pageIndex = 1;
+      this.tips = [];
+      this.getSerachAddress(1);
+      // console.log('this->tips:',this.tips)
+    },
+    // 滚动加载
+    onload() {
+      // console.log('滚动加载===')
+      this.pageIndex++;
+      this.getSerachAddress(2);
     },
     // 地址获取
-    getSerachAddress() {
-      // console.log('getSerachAddress===',1111)
+    getSerachAddress(index) {
       var that=this
-      // 实例化Autocomplete
-      // console.log(that.city)
-      var autoOptions = {
-        //city 限定城市，默认全国
-        // city: that.city,
-        city: '全国',
-        output: "list"
-      };
-      if (that.searchValue != '') {
-        // console.log('getSerachAddress===',2222)
-        var autoComplete = new AMap.Autocomplete(autoOptions);
-        autoComplete.search(that.searchValue, function(status, res) {
-          // 搜索成功时，result即是对应的匹配数据
-          console.log("getSerachAddress===", res);
-          var data = res.tips;
-          // console.log(that.tips)
-          for (var i in data) {
-            if (data[i]['address'] == null || data[i]['address'].length == 0 || typeof(data[i]['address']) === undefined || data[i]['district'] == "") {
-              data.splice(i,1);
-              // var t = console.log('district1===' ,data.splice(i,1));
-            }
-          }
-          that.tips = data;
+      AMap.service(["AMap.PlaceSearch"], function() {
+        //构造地点查询类
+        var placeSearch = new AMap.PlaceSearch({ 
+            pageSize: 10, // 单页显示结果条数
+            pageIndex: that.pageIndex, // 页码
+            city: "全国", // 兴趣点城市
+            citylimit: false,  //是否强制限制在设置的城市内搜索
+            panel: "list", // 结将在此容器中进行展示。
         });
-      }
+        //关键字查询
+        placeSearch.search(that.searchValue,function(status,result){
+          // console.log(result);
+          var data = result.poiList;
+          if (data != null && data.length != 0 && data != undefined) {
+            if (index == 1) {
+              that.tips=data.pois;
+            }else if (index == 2) {
+              that.tips=that.tips.concat(data.pois);
+            }
+          }else {
+            that.disabled = true;
+          }
+          console.log(that.tips)
+        });
+      });
     },
     // 地址选择
     checkDetails(item) {
+      // console.log(item)
       this.showBanner = false;
       var data = {};
-      var url = this.$global_msg.getCodeByFullNameForAmap;
-      var obj = {fullname: item.district}
-      this.axios.post(url,obj)
-      .then(res => {
-        console.log(res)
-        if (res.data.code == 0 && res.data.data != null) {
-          var results = res.data.data
           // console.log(results)
-          data.province = results.province_name;
-          data.pro_code = results.provincecode;
-          data.city = results.city;
-          data.city_code = results.citycode;
-          data.dist = results.name;
+          data.province = item.pname;
+          data.pro_code = item.pcode;
+          data.city = item.cityname;
+          data.city_code = item.citycode;
+          data.dist = item.adname;
           data.ad_code = item.adcode;
           data.name = item.name;
           data.address = item.address.length != 0 ? item.address : item.province;
@@ -699,10 +707,6 @@ export default {
             this.pass_points = [data]
             // console.log('pass_points=====',this.pass_points);
           }
-        }else{
-          this.$toast('地址不合法');
-        }
-      })
     },
 
     //点击提交按钮，检测参数完整性
@@ -768,10 +772,12 @@ export default {
       var reg1=/^[1][0-9]{10}$/;
       //验证
       if(this.phone != "" && reg1.test(this.phone)){
+      // if(this.phone != ""){
         this.getDriving(this.points, 0);
       } else {
         //提示
         this.$toast("手机号码格式错误");
+        // this.$toast("手机号码不能为空");
         // console.log(this.points)
         return;
       }
@@ -809,7 +815,7 @@ export default {
           this.$toast(data.msg);
           this.clearUplaod();
           this.reminderShow = true; // 温馨提示
-        }else if (res.status==200 && data.code==9301) {
+        }else if (res.status==200 && data.code==9301) { // 线路已存在
           this.fullscreenLoading = false;
           this.$toast(data.msg);
           this.clearUplaod();
@@ -865,7 +871,6 @@ export default {
           var endLngLat = [points[i+1].longitude, points[i+1].latitude];
           driving.search(startLngLat, endLngLat, function(status, result) {
             // 未出错时，result即是对应的路线规划方案
-            // console.log(result);
               if(result && result.routes && result.routes.length>0){
               that.intervals.push(result.routes[0].distance)
               that.spaces.push(result.routes[0].time)
@@ -892,7 +897,7 @@ export default {
       this.axios.post(url, obj)
       .then(res => {
         var data = res.data;
-        console.log('getJob===',data)
+        // console.log('getJob===',data)
         if (data.code == 4001) {
           this.$store.commit('_removeToken', 'access_token');
           this.$store.commit('_removeUsername', 'username');
@@ -903,7 +908,15 @@ export default {
           this.path = data.data.path;
           this.upload_id = data.data.id;
           var start = data.data.start;
-          this.startAddress = start!=null ? start : '见图';
+          if(start != ''){
+            this.startAddress = start;
+            this.addressIndex = 0;
+          }else if(end != ''){
+            this.startAddress = end;
+            this.addressIndex = 1;
+          }else {
+            this.addressIndex = 2;
+          }
         }
         
       })
@@ -968,8 +981,10 @@ export default {
   },
   mounted() {
     // 地图初始化
-    AMap.plugin("AMap.Driving", function() {})
-    AMap.plugin("AMap.Autocomplete", function() {})
+    AMap.plugin("AMap.Driving", function() {});
+    AMap.plugin("AMap.Autocomplete", function() {});
+    // AMap.plugin(["AMap.ToolBar"], function() {
+    // });
     for (var i = 0; i <= 300; i++) {
       if(i % 5 ==0){
         this.goViaTimeColumns.push(i);
@@ -1170,6 +1185,14 @@ input {
 .btn-three{
   color: rgba(51,51,51,1);
   background: rgba(216,216,216,1);
+}
+/* 结果隐藏 */
+.mapList{
+  display: none;
+}
+.address-size{
+  font-size: 8px;
+  color: #999;
 }
 </style>
 

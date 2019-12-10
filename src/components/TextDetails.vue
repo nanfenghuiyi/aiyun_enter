@@ -374,10 +374,10 @@ export default {
         // console.log(data);
         var pathList = data.path;
         for (let i = 0; i < pathList.length; i++) {
-          console.log(pathList[i])
+          // console.log(pathList[i])
           this.path.push(pathList[i])
         }
-        console.log(this.path)
+        // console.log(this.path)
         this.full_plate = data.full_plate!=''?data.full_plate:'无';
         this.is_time = data.is_flow==2 ? true : false;
         this.is_flow = data.is_flow==2 ? '流水班次' : '固定班次';
