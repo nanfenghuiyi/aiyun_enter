@@ -136,6 +136,7 @@
         v-model="bigShow"
         :images="path"
         @change="onChange"
+        :show-indicators="true"
       >
       </van-image-preview>
     </div>

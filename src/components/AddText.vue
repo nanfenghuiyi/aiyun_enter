@@ -8,8 +8,12 @@
     <div class="news-form-section">
       <div>信息补充</div>
       <div class="form-section-first">
-        <div v-text="textAddress[addressIndex]"></div>
+        <div>始发站</div>
         <div class="form-section-address" v-text="startAddress"></div>
+      </div>
+      <div class="form-section-first">
+        <div>终点站</div>
+        <div class="form-section-address" v-text="endAddress"></div>
       </div>
     </div>
     <div class="section">
@@ -294,7 +298,7 @@ export default {
       showBanner: true,
       upload_id: '',
       phone: '',
-      line_type: 0,
+      line_type: 1,
       start_time: '',
       end_time: '',
       period: '',
@@ -378,8 +382,8 @@ export default {
       fullscreenLoading: false, // 加载中
       //信息查看
       addressIndex: 0,
-      textAddress: ['始发站', '终点站', '无'],
-      startAddress: '',
+      startAddress: '', // 始发站
+      endAddress: '', // 终点站
       // 温馨提示
       reminderShow: false,
       // 获取的任务地址
@@ -410,7 +414,7 @@ export default {
       } else if (command == 1) {
         this.line_type = 2;
       }
-      // console.log(this.line_type)
+      console.log(this.line_type)
     },
     plateShortPopup() {
       this.plateShortShow = true;
@@ -434,11 +438,20 @@ export default {
       this.timeNum = e;
     },
     thisData(time) {
-      var nowDate=new Date
-      var nowTime = nowDate.toLocaleDateString();
+      var nowDate=new Date();
+      /* var nowTime = nowDate.toLocaleDateString();
+      nowTime = nowTime.replace(/-/g,"/"); */
+      // 获取当前年份
+      var year = nowDate.getFullYear();
+      // 获取当前月份
+      var month = nowDate.getMonth() + 1;
+      // 获取当前是几号
+      var strDate = nowDate.getDate();
+      var nowTime = year + '/' + (month<10 ? "0" + month : month) + '/' + (strDate<10 ? "0" + strDate : strDate);
       if (this.timeNum==1 || this.timeNum==2) {
         this.start_time = (new Date((nowTime + ' ' + time + ":00")).getTime())/1000;
         this.goStartTime = time;
+        console.log(this.start_time)
       }else if (this.timeNum==3) {
         this.end_time = (new Date((nowTime + ' ' + time + ":00")).getTime())/1000;
         this.goEndTime = time;
@@ -661,7 +674,7 @@ export default {
           }else {
             that.disabled = true;
           }
-          console.log(that.tips)
+          // console.log(that.tips)
         });
       });
     },
@@ -696,8 +709,15 @@ export default {
           // console.log(str)
           if(this.type == 0) {
             this.checkStart = str;
-            this.start = data
-            // console.log(data);
+            /* if(this.start == null && this.end != null) {
+              if (JSON.stringify(this.start) == JSON.stringify(this.end)) {
+
+              }
+            } else {
+              this.start = data
+            } */
+            this.start = data;
+            console.log(data);
           }else if (this.type == 1) {
             this.checkEnd = str;
             // console.log('checkEnd====',this.checkEnd)
@@ -730,17 +750,17 @@ export default {
         }
       }
       // 班次
-      if(this.line_type!=2){
-        if (this.start_time == '') {
+      if(this.line_type ==1 ){
+        if (this.start_time == '' && this.start_time == null) {
           this.$toast("出发时间不能为空");
           return;
         }
       }else if(this.line_type==2){
-        if (this.start_time == '') {
+        if (this.start_time == '' && this.start_time == null) {
           this.$toast("开始时间不能为空");
           return;
         }
-        if (this.end_time == '') {
+        if (this.end_time == '' && this.start_time == null) {
           this.$toast("截止时间不能为空");
           return;
         }
@@ -749,7 +769,7 @@ export default {
           return;
         }
       };
-      if (this.start != null) {
+      if (this.start != null && this.start != '') {
         this.points.push(this.start);
       } else {
         //提示
@@ -762,11 +782,16 @@ export default {
           this.points.push(this.pass_points[i]);
         }
       }
-      if (this.end != null) {
+      if (this.end != null && this.start != '') {
         this.points.push(this.end);
       } else {
         //提示
         this.$toast("终点不能为空");
+        return;
+      }
+      if (JSON.stringify(this.start) == JSON.stringify(this.end)) {
+        //提示
+        this.$toast("起点与终点不能相同");
         return;
       }
       var reg1=/^[1][0-9]{10}$/;
@@ -781,7 +806,6 @@ export default {
         // console.log(this.points)
         return;
       }
-      
     },
     // 提交信息
     uplaodClick() {
@@ -828,7 +852,7 @@ export default {
     },
     // 清除当前页面内容
     clearUplaod() {
-      this.line_type = 0;
+      this.line_type = 1;
       this.start_time = '';
       this.city_code = '';
       this.start_time = '';
@@ -851,7 +875,6 @@ export default {
       this.checkStart = '选择起点';
       this.checkEnd = '选择终点';
       this.checkVia = '选择途径点';
-      this.phone = '';
       this.commandShifts = 0;
       this.commandCarPlate = 0;
     },
@@ -904,18 +927,38 @@ export default {
           this.$router.replace({
               path: '/',
           });
+        }else if (data.code == 9202) {
+          this.$alert(data.msg, '提示', {
+            confirmButtonText: '确定',
+            type: 'warning',
+            showClose: false,
+          }).then(() => {
+            this.getJob();
+          });
+        }else if (data.code == 9201) {
+          this.$alert(data.msg, '提示', {
+            confirmButtonText: '确定',
+            type: 'warning',
+            showClose: false,
+          }).then(() => {
+            this.$router.replace({
+              path: '/',
+          });
+          });
         }else {
           this.path = data.data.path;
           this.upload_id = data.data.id;
           var start = data.data.start;
-          if(start != ''){
+          var end = data.data.end;
+          if(start != '' && start != null){
             this.startAddress = start;
-            this.addressIndex = 0;
-          }else if(end != ''){
-            this.startAddress = end;
-            this.addressIndex = 1;
           }else {
-            this.addressIndex = 2;
+            this.startAddress = '无'
+          }
+          if(end != '' && end != null){
+            this.endAddress = end;
+          }else {
+            this.endAddress = '无'
           }
         }
         
@@ -1053,7 +1096,7 @@ input {
   text-align: left;
   font-size: 16px;
   overflow: auto;
-  margin-top: 260px;
+  margin-top: 285px;
 }
 .section-text {
   padding: 10px 20px;
