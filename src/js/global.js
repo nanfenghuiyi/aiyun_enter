@@ -33,6 +33,9 @@ const getJob = '/Web/Card/getJob'
 // 获取省市信息
 const getCodeByFullNameForAmap = '/Common/getCodeByFullNameForAmap'
 
+// 统计列表
+const Statistics = '/Web/Statistics/enterStatistics'
+
 // 当前地址
 let baseUrl = ''
 
@@ -55,4 +58,5 @@ export default {
   saveLine,
   getJob,
   getCodeByFullNameForAmap,
+  Statistics,
 }

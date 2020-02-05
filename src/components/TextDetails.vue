@@ -339,7 +339,7 @@ export default {
       // console.log(obj)
       this.axios.post(url, obj).then(res => {
         var data = res.data;
-        // console.log(data)
+        console.log(data)
         if (data.code == 4001) {
           this.$store.commit('_removeToken', 'access_token');
           this.$store.commit('_removeUsername', 'username');

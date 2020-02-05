@@ -848,6 +848,10 @@ export default {
           this.fullscreenLoading = false;
           this.$toast(data.msg);
         }
+      }).catch(err => {
+        console.log(err);
+        this.fullscreenLoading = false;
+        this.$toast(err.msg);
       })
     },
     // 清除当前页面内容
@@ -895,21 +899,23 @@ export default {
           driving.search(startLngLat, endLngLat, function(status, result) {
             // 未出错时，result即是对应的路线规划方案
               if(result && result.routes && result.routes.length>0){
-              that.intervals.push(result.routes[0].distance)
-              that.spaces.push(result.routes[0].time)
-              that.getDriving(points, i+1);
+                that.intervals.push(result.routes[0].distance)
+                that.spaces.push(result.routes[0].time)
+                that.getDriving(points, i+1);
+                that.fullscreenLoading = false;
                 // console.log(that.intervals)
                   // console.log(that.spaces)
               }else{
-                this.$toast('路线规划失败，请稍后再试')
+                that.fullscreenLoading = false;
+                that.$toast('路线规划失败，请稍后再试')
               }
           });
         }else{
-          this.fullscreenLoading = false;
-          this.$toast('地图组件初始化失败，请刷新重试')
+          that.fullscreenLoading = false;
+          that.$toast('地图组件初始化失败，请刷新重试')
         }
       } else {
-        this.uplaodClick();
+        that.uplaodClick();
       }
     },
     // 获取任务
