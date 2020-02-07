@@ -20,7 +20,7 @@
               <div></div>
               <span v-text="item.add_time"></span>
             </div>
-            <!-- <div v-text="item.status_val"></div> -->
+            <div v-text="item.status_val"></div>
             <div @click="lineDetail(item.id)">
               <ul class="bus-line-ul">
                 <li v-text="item.full_plate!=''?item.full_plate:'无'"></li>
