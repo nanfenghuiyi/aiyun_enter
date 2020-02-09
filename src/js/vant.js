@@ -3,7 +3,8 @@ import {
   Popup,
   DatetimePicker,
   ImagePreview,
-  Toast
+  Toast,
+  Picker
 } from 'vant';
 
 const element = {
@@ -12,6 +13,7 @@ const element = {
       .use(DatetimePicker)
       .use(ImagePreview)
       .use(Toast)
+      .use(Picker)
   }
 }
 export default element
